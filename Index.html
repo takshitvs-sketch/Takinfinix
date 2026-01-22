@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TAK INFINITY PRO 2026</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #050505;
+            --surface: #121212;
+            --primary: #ff0000;
+            --accent: #00d2ff;
+            --text: #ffffff;
+            --glass: rgba(255, 255, 255, 0.05);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: var(--text); overflow-x: hidden; height: 100vh; width: 100vw; }
+
+        /* HEADER */
+        header {
+            position: sticky; top: 0; z-index: 100; background: rgba(5,5,5,0.9);
+            backdrop-filter: blur(20px); padding: 15px 20px; border-bottom: 1px solid #222;
+            display: flex; flex-direction: column; gap: 15px;
+        }
+        .top-row { display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 24px; font-weight: 900; letter-spacing: -1px; color: var(--primary); }
+        .logo span { color: #fff; }
+        
+        /* SEARCH BOX */
+        .search-container {
+            display: flex; background: #1a1a1a; border-radius: 12px; padding: 10px 15px;
+            align-items: center; border: 1px solid #333;
+        }
+        .search-container input {
+            background: transparent; border: none; color: #fff; width: 100%;
+            outline: none; margin-left: 10px; font-size: 16px;
+        }
+
+        /* GRID SYSTEM */
+        .content { padding: 10px; }
+        .sec-title { padding: 15px 10px; font-size: 18px; font-weight: 800; color: #aaa; text-transform: uppercase; }
+        .channel-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 12px; padding-bottom: 30px;
+        }
+        .card {
+            background: var(--surface); border-radius: 12px; overflow: hidden;
+            transition: 0.3s; border: 1px solid #222; cursor: pointer;
+        }
+        .card:active { transform: scale(0.95); border-color: var(--accent); }
+        .card img { width: 100%; aspect-ratio: 16/9; object-fit: contain; background: #000; }
+        .card-name { padding: 8px; font-size: 12px; font-weight: 600; text-align: center; }
+
+        /* YOUTUBE STYLE PLAYER SCREEN */
+        #player-screen {
+            position: fixed; inset: 0; background: var(--bg); z-index: 1000;
+            display: none; flex-direction: column; animation: slideUp 0.4s cubic-bezier(0,0,0,1);
+        }
+        .video-container {
+            width: 100%; aspect-ratio: 16/9; background: #000; position: relative;
+        }
+        video { width: 100%; height: 100%; transition: transform 0.3s; }
+        .player-controls-overlay {
+            position: absolute; inset: 0; background: rgba(0,0,0,0.3);
+            display: flex; flex-direction: column; justify-content: space-between; padding: 15px;
+            opacity: 0; transition: 0.3s;
+        }
+        .video-container:hover .player-controls-overlay { opacity: 1; }
+        
+        .p-btn { background: none; border: none; color: #fff; font-size: 22px; cursor: pointer; }
+        .p-body { padding: 20px; overflow-y: auto; flex: 1; }
+        .p-title { font-size: 22px; font-weight: 800; margin-bottom: 10px; }
+        .p-meta { color: #888; font-size: 14px; margin-bottom: 20px; }
+        
+        .p-actions { display: flex; gap: 20px; border-bottom: 1px solid #222; padding-bottom: 20px; margin-bottom: 20px; }
+        .act { display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 11px; }
+
+        /* ASPECT RATIO / ZOOM BTN */
+        .zoom-badge {
+            background: var(--primary); color: #fff; padding: 5px 10px; 
+            border-radius: 5px; font-size: 10px; font-weight: 800;
+        }
+
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="top-row">
+        <div class="logo">TAK <span>INFINITY</span></div>
+        <i class="fas fa-bars" style="font-size:20px;"></i>
+    </div>
+    <div class="search-container">
+        <i class="fas fa-search" style="color:#888;"></i>
+        <input type="text" id="search" placeholder="Search 100+ Tamil Channels..." oninput="doSearch()">
+    </div>
+</header>
+
+<div class="content">
+    <div class="sec-title">Popular Tamil TV</div>
+    <div class="channel-grid" id="popular-grid"></div>
+
+    <div class="sec-title">All Channels</div>
+    <div class="channel-grid" id="all-grid"></div>
+</div>
+
+<div id="player-screen">
+    <div class="video-container" id="v-cont">
+        <video id="video" playsinline></video>
+        
+        <div class="player-controls-overlay">
+            <div style="display:flex; justify-content: space-between;">
+                <button class="p-btn" onclick="closePlayer()"><i class="fas fa-chevron-down"></i></button>
+                <div class="zoom-badge" id="ratio-text">FIT</div>
+                <button class="p-btn"><i class="fas fa-cog"></i></button>
+            </div>
+            <div style="display:flex; justify-content: center; gap:40px;">
+                <button class="p-btn"><i class="fas fa-step-backward"></i></button>
+                <button class="p-btn" onclick="togglePlay()"><i class="fas fa-pause" id="play-ico"></i></button>
+                <button class="p-btn"><i class="fas fa-step-forward"></i></button>
+            </div>
+            <div style="display:flex; justify-content: space-between; align-items: center;">
+                <div style="font-size:12px;">Live 1080p HDR</div>
+                <div style="display:flex; gap:15px;">
+                    <button class="p-btn" onclick="cycleRatio()"><i class="fas fa-expand-arrows-alt"></i></button>
+                    <button class="p-btn" onclick="toggleFS()"><i class="fas fa-expand"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="p-body">
+        <div class="p-title" id="p-title">Channel Name</div>
+        <div class="p-meta">2.4M watching • Live Now</div>
+        <div class="p-actions">
+            <div class="act"><i class="fas fa-thumbs-up"></i> Like</div>
+            <div class="act"><i class="fas fa-share"></i> Share</div>
+            <div class="act"><i class="fas fa-download"></i> Download</div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<script>
+    // GitHub Tamil Playlist Source
+    const SOURCE = "https://iptv-org.github.io/iptv/languages/tam.m3u";
+    const POPULAR_LIST = ["Sun TV", "Star Vijay", "KTV", "Zee Tamil", "Sun News", "Polimer"];
+    
+    let allData = [];
+    let currentRatio = 0; // 0: Fit, 1: Stretch, 2: Zoom
+
+    async function init() {
+        const res = await fetch(SOURCE);
+        const text = await res.text();
+        const lines = text.split('\n');
+        for (let i = 0; i < lines.length; i++) {
+            if (lines[i].startsWith('#EXTINF')) {
+                const name = lines[i].split(',').pop().trim();
+                const logo = (lines[i].match(/tvg-logo="(.*?)"/) || [])[1] || "";
+                const url = lines[i+1]?.trim();
+                if (url && url.startsWith('http')) allData.push({ name, logo, url });
+            }
+        }
+        render();
+    }
+
+    function render(filter = "") {
+        const pop = document.getElementById('popular-grid');
+        const all = document.getElementById('all-grid');
+        pop.innerHTML = ""; all.innerHTML = "";
+        
+        allData.forEach(ch => {
+            if (filter && !ch.name.toLowerCase().includes(filter.toLowerCase())) return;
+            const card = document.createElement('div');
+            card.className = "card";
+            card.onclick = () => openPlayer(ch);
+            card.innerHTML = `<img src="${ch.logo || 'https://via.placeholder.com/150'}"><div class="card-name">${ch.name}</div>`;
+            
+            if (POPULAR_LIST.some(p => ch.name.toLowerCase().includes(p.toLowerCase()))) pop.appendChild(card);
+            else all.appendChild(card);
+        });
+    }
+
+    function doSearch() { render(document.getElementById('search').value); }
+
+    function openPlayer(ch) {
+        document.getElementById('player-screen').style.display = "flex";
+        document.getElementById('p-title').innerText = ch.name;
+        const video = document.getElementById('video');
+
+        if (Hls.isSupported()) {
+            const hls = new Hls({ 
+                enableWorker: true,
+                lowLatencyMode: true,
+                backBufferLength: 90 // Prevents 1080p buffering
+            });
+            hls.loadSource(ch.url);
+            hls.attachMedia(video);
+        } else { video.src = ch.url; }
+        video.play();
+    }
+
+    function closePlayer() {
+        const v = document.getElementById('video');
+        v.pause(); v.src = "";
+        document.getElementById('player-screen').style.display = "none";
+    }
+
+    function cycleRatio() {
+        const v = document.getElementById('video');
+        const txt = document.getElementById('ratio-text');
+        currentRatio = (currentRatio + 1) % 3;
+        if(currentRatio === 0) { v.style.objectFit = "contain"; txt.innerText = "FIT"; v.style.transform = "scale(1)"; }
+        if(currentRatio === 1) { v.style.objectFit = "fill"; txt.innerText = "STRETCH"; v.style.transform = "scale(1)"; }
+        if(currentRatio === 2) { v.style.objectFit = "cover"; txt.innerText = "ZOOM"; v.style.transform = "scale(1.1)"; }
+    }
+
+    function toggleFS() {
+        const c = document.getElementById('v-cont');
+        if (!document.fullscreenElement) c.requestFullscreen(); // Real Full Screen
+        else document.exitFullscreen();
+    }
+
+    function togglePlay() {
+        const v = document.getElementById('video');
+        const ico = document.getElementById('play-ico');
+        if(v.paused) { v.play(); ico.className = "fas fa-pause"; }
+        else { v.pause(); ico.className = "fas fa-play"; }
+    }
+
+    init();
+</script>
+</body>
+</html>
